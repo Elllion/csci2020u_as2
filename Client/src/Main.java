@@ -24,6 +24,7 @@ public class Main extends Application{
     private BorderPane layout;
     ListView<String> clientFiles;
     ListView<String> serverFiles;
+    private static File localFolder = new File("data");
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Assignment 2");
@@ -82,6 +83,13 @@ public class Main extends Application{
         clientFiles = new ListView();
         serverFiles = new ListView();
 
+        File[] fileList = localFolder.listFiles();
+
+        for(File f : fileList){
+            if(f.isFile())
+                clientFiles.getItems().add(f.getName());
+        }
+
         editArea.add(clientFiles,0,1);
         editArea.add(serverFiles,1,1);
         // initialize the border pane
@@ -96,6 +104,13 @@ public class Main extends Application{
     }
 
     public static void main(String [] args) throws IOException {
+
+        if(args.length < 1){
+            System.out.println("No arguments passed");
+            System.exit(0);
+        }
+
+        localFolder = new File(args[0]);
         launch(args);
     }
 }
