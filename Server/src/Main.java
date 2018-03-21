@@ -3,6 +3,73 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.UnsupportedAddressTypeException;
 
+class ClientConnectionHandler extends Thread{
+    Socket clientSocket;
+  ClientConnectionHandler(Socket clientSocket){
+        this.clientSocket = clientSocket;
+  }
+
+  public void run(){
+      try {
+          InputStream cin = clientSocket.getInputStream();
+          InputStreamReader creader = new InputStreamReader(cin);
+          BufferedReader cbin = new BufferedReader(creader);
+          String cline = null;
+
+          System.out.println("Connected to server");
+
+          while ((cline = cbin.readLine()) == null) {
+              System.out.println("Waiting for message...");
+          }
+          clientSocket.shutdownInput();//Shutdown once sent
+          System.out.println(cline);
+
+          String[] command = cline.split(" ");
+
+          if(command.length > 0) {
+              if (command[0].contains("DIR")){
+                  String data = "test1.txt,test2.txt";
+
+
+                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+                  out.print(data);
+                  out.flush();
+                  //out.close();
+                  System.out.println("Message sent");
+
+                  clientSocket.close();
+              }else if(command[0].contains("DOWNLOAD")){
+                  String data = command[1];
+
+
+                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+                  out.print(data);
+                  out.flush();
+                  //out.close();
+                  System.out.println("Message sent");
+
+                  clientSocket.close();
+              }
+              else if(command[0].contains("UPLOAD")){
+                  String data = command[1];
+
+
+                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
+                  out.print(data);
+                  out.flush();
+                  //out.close();
+                  System.out.println("Message sent");
+
+                  clientSocket.close();
+              }
+          }
+      }
+      catch(Exception e){
+          e.printStackTrace();
+      }
+  }
+}
+
 public class Main {
     private static ServerSocket serverSocket;
     private static Socket clientSocket;
@@ -13,37 +80,16 @@ public class Main {
 
             System.out.println("Ready");
 
-            while(clientSocket == null){
+            while(true){
                 clientSocket = serverSocket.accept();
+
+                if(clientSocket != null){
+                    ClientConnectionHandler conn = new ClientConnectionHandler(clientSocket);
+                    conn.run();
+                }
             }
 
-            System.out.println("Client connected");
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
 
-            out.print("Hello");
-            out.flush();
-            clientSocket.shutdownOutput();//Shutdown once output sent
-            System.out.println("Message sent");
-
-
-            InputStream in = clientSocket.getInputStream();
-            InputStreamReader reader = new InputStreamReader(in);
-            BufferedReader bin =  new BufferedReader(reader);
-            String line = null;
-
-            while(line == null){
-                line = bin.readLine();
-                System.out.println("Waiting for message...");
-            }
-
-            System.out.println(line);
-            in.close();
-            reader.close();
-            bin.close();
-
-            out.close();
-            clientSocket.close();
-            serverSocket.close();
         } catch (IOException e1) {
             e1.printStackTrace();
         }

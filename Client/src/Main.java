@@ -22,8 +22,8 @@ import javax.swing.JTable;
 
 public class Main extends Application{
     private BorderPane layout;
-    ListView<String> clientFiles;
-    ListView<String> serverFiles;
+    static ListView<String> clientFiles = new ListView<>();
+    static ListView<String> serverFiles = new ListView<>();
     private static File localFolder = new File("data");
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -41,28 +41,32 @@ public class Main extends Application{
             public void handle(ActionEvent event) {
                 try {
                     Socket socket = new Socket("127.0.0.1", 8888);
-                    InputStream cin = socket.getInputStream();
-                    InputStreamReader creader = new InputStreamReader(cin);
-                    BufferedReader cbin = new BufferedReader(creader);
-                    String cline = null;
-
-                    System.out.println("Connected to server");
-
-                    while ((cline = cbin.readLine()) == null) {
-                        System.out.println("Waiting for message...");
-                    }
-                    socket.shutdownInput();//Shutdown once sent
-                    System.out.println(cline);
-
-                    String data = serverFiles.getSelectionModel().getSelectedItem();
-
-
+                    System.out.println("Connected");
                     PrintWriter out = new PrintWriter(socket.getOutputStream());
-                    out.print(data);
+
+                    out.print("DOWNLOAD " + serverFiles.getSelectionModel().getSelectedItem());
                     out.flush();
-                    //out.close();
+                    socket.shutdownOutput();//Shutdown once output sent
                     System.out.println("Message sent");
 
+
+                    InputStream in = socket.getInputStream();
+                    InputStreamReader reader = new InputStreamReader(in);
+                    BufferedReader bin = new BufferedReader(reader);
+                    String line = null;
+
+                    while (line == null) {
+                        line = bin.readLine();
+                        System.out.println("Waiting for message...");
+                    }
+
+                    System.out.println(line);
+
+                    in.close();
+                    reader.close();
+                    bin.close();
+
+                    out.close();
                     socket.close();
                 }catch (IOException e){
                     System.out.println("IOException");
@@ -76,12 +80,40 @@ public class Main extends Application{
         ulButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-               System.out.println("Hello");
+                try {
+                    Socket socket = new Socket("127.0.0.1", 8888);
+                    System.out.println("Connected");
+                    PrintWriter out = new PrintWriter(socket.getOutputStream());
+
+                    out.print("UPLOAD " + clientFiles.getSelectionModel().getSelectedItem());
+                    out.flush();
+                    socket.shutdownOutput();//Shutdown once output sent
+                    System.out.println("Message sent");
+
+                    InputStream in = socket.getInputStream();
+                    InputStreamReader reader = new InputStreamReader(in);
+                    BufferedReader bin = new BufferedReader(reader);
+                    String line = null;
+
+                    while (line == null) {
+                        line = bin.readLine();
+                        System.out.println("Waiting for message...");
+                    }
+
+                    System.out.println(line);
+
+                    in.close();
+                    reader.close();
+                    bin.close();
+
+                    out.close();
+                    socket.close();
+                }catch (IOException e){
+                    System.out.println("IOException");
+                    e.printStackTrace();
+                }
             }
         });
-
-        clientFiles = new ListView();
-        serverFiles = new ListView();
 
         File[] fileList = localFolder.listFiles();
 
@@ -103,13 +135,54 @@ public class Main extends Application{
 
     }
 
+
+    public static void getServerFiles(){
+        try {
+            Socket socket = new Socket("127.0.0.1", 8888);
+            System.out.println("Connected");
+            PrintWriter out = new PrintWriter(socket.getOutputStream());
+
+            out.print("DIR");
+            out.flush();
+            socket.shutdownOutput();//Shutdown once output sent
+            System.out.println("Message sent");
+
+
+            InputStream in = socket.getInputStream();
+            InputStreamReader reader = new InputStreamReader(in);
+            BufferedReader bin = new BufferedReader(reader);
+            String line = null;
+
+            while (line == null) {
+                line = bin.readLine();
+                System.out.println("Waiting for message...");
+            }
+
+            System.out.println(line);
+            String[] data = line.split(",");
+
+            for(String s : data) {
+                System.out.println(s);
+                serverFiles.getItems().add(s);
+            }
+            in.close();
+            reader.close();
+            bin.close();
+
+            out.close();
+            socket.close();
+        }catch (IOException e){
+            System.out.println("IOException");
+            e.printStackTrace();
+        }
+    }
     public static void main(String [] args) throws IOException {
 
         if(args.length < 1){
             System.out.println("No arguments passed");
             System.exit(0);
         }
-
+        getServerFiles();
         localFolder = new File(args[0]);
         launch(args);
     }
