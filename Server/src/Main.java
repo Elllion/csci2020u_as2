@@ -28,7 +28,14 @@ class ClientConnectionHandler extends Thread{
 
           if(command.length > 0) {
               if (command[0].contains("DIR")){
-                  String data = "test1.txt,test2.txt";
+                  File sharedFiles[] = new File("files").listFiles();
+                  String data = "";
+
+                  for(File f: sharedFiles){
+                      if(f.isFile())
+                          data+= f.getName() + ",";
+                  }
+
 
 
                   PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
