@@ -48,10 +48,27 @@ class ClientConnectionHandler extends Thread{
               }else if(command[0].contains("DOWNLOAD")){
                   String data = command[1];
 
+                  String filePath = "files/" + command[1];
+                  File sendTo = new File(filePath);
 
+                  int i = 2;
+                  while(!sendTo.exists() && i < command.length){
+                      filePath += " " + command[i];
+                      i++;
+                      sendTo = new File(filePath);
+                      System.out.println(filePath);
+                  }
+                  BufferedReader br = new BufferedReader(new FileReader(sendTo));
                   PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
-                  out.print(data);
+                  String line = "";
+
+                  while((line = br.readLine()) != null){
+                      out.println(data);
+                  }
+
                   out.flush();
+
+
                   //out.close();
                   System.out.println("Message sent");
 
@@ -60,13 +77,19 @@ class ClientConnectionHandler extends Thread{
               else if(command[0].contains("UPLOAD")){
                   String data = command[1];
 
+                  File saveTo = new File("files/" + data);
 
-                  PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
-                  out.print(data);
-                  out.flush();
-                  //out.close();
-                  System.out.println("Message sent");
+                  PrintWriter saver= new PrintWriter(saveTo);
 
+                  StringBuilder fileText = new StringBuilder();
+                  while((cline = cbin.readLine()) != null){
+                      System.out.println("Line: " + cline);
+                     fileText.append(cline);
+                     fileText.append(System.getProperty("line.separator"));
+                  }
+                  saver.write(fileText.toString());
+                  System.out.print(fileText.toString());
+                  saver.close();
                   clientSocket.close();
               }
           }
