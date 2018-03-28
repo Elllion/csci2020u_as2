@@ -155,6 +155,10 @@ public class Main extends Application{
         clientFiles.getItems().clear();
         File[] fileList = localFolder.listFiles();
 
+        if(!localFolder.exists()){
+            System.out.println("Folder does not exist: " + localFolder.getName());
+            return;
+        }
         //Don't add anything if the local folder is empty
         if(fileList.length == 0)
             return;
@@ -210,8 +214,8 @@ public class Main extends Application{
     public static void main(String [] args) {
 
         if(args.length < 1){
-            System.out.println("No arguments passed. Required arguments: \n-Path to shared folder\n\n" +
-                    "Optional arguments:\n-Server IP\n-Server Port");
+            System.out.println("No arguments passed. Required arguments: \n-Path to shared folder\n-Server IP" +
+                    "Optional arguments:\n-Server Port");
             System.exit(0);
         }
         if(args.length > 1){

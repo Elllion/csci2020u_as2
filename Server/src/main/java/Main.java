@@ -113,7 +113,6 @@ class ClientConnectionHandler extends Thread{
                   //Receive data from the user
                   StringBuilder fileText = new StringBuilder();
                   while((cline = cbin.readLine()) != null){
-                      System.out.println("Line: " + cline);
                      fileText.append(cline);
                      fileText.append(System.getProperty("line.separator"));
                   }
